@@ -1,0 +1,173 @@
+# Vector Database Selection for AI-Powered Frontend Code Generation
+## 10‑Slide Presentation for Team Pitch
+
+---
+
+### Slide 1: Title
+**Vector Database Selection for AI-Powered Frontend Code Generation**  
+*Enabling Automated, High‑Quality Frontend Code from User Stories*  
+[Your Name] | [Date]
+
+---
+
+### Slide 2: The Problem
+**Building an Automated Frontend Code Generator**
+
+- **Goal:** Convert user stories into production‑ready frontend code (data‑layer, config‑ui, react‑toolkit).
+- **Core Challenge:** Retrieve the most relevant internal code examples to guide the AI model.
+- **Why a Vector Database?**
+  - Store embeddings of code chunks.
+  - Perform semantic search + keyword matching.
+  - Filter by layer, framework, file type, etc.
+- **Without it:** Irrelevant examples → poor code quality.
+
+---
+
+### Slide 3: Key Requirements
+**What Our Vector Database Must Deliver**
+
+| Requirement | Why It Matters |
+|-------------|----------------|
+| **Hybrid Search** (Semantic + Keyword) | Match both meaning (e.g., “login”) and exact terms (`api.ts`). |
+| **Rich Metadata Filtering** | Filter by `layer`, `framework`, `componentType` – our three‑layer architecture. |
+| **Scalability** | Millions of code chunks, growing over time. |
+| **Low Latency** | Retrieval in milliseconds to keep generation fast. |
+| **Production Readiness** | High availability, backups, easy operations. |
+| **Node.js/TypeScript Integration** | Seamless fit with our stack. |
+
+---
+
+### Slide 4: Candidate Overview
+**Top Open‑Source Vector Databases**
+
+| **Qdrant** | **Weaviate** |
+|------------|--------------|
+| Written in Rust | Written in Go |
+| Schema‑less, flexible | Schema‑based with GraphQL |
+| Excellent metadata filtering | Native hybrid search (BM25 + vector) |
+| Sparse vector support for hybrid | Built‑in modules for vectorization |
+
+Both are production‑ready, horizontally scalable, and have strong communities.
+
+---
+
+### Slide 5: Deep Dive Comparison
+**Qdrant vs. Weaviate – Core Strengths**
+
+| Feature | **Qdrant** | **Weaviate** |
+|---------|------------|--------------|
+| **Hybrid Search** | Via sparse vectors (learned term weights) | **Native** BM25 + vector (simplest) |
+| **Metadata Filtering** | ⭐⭐⭐⭐⭐ Best‑in‑class (pre‑filtering) | ⭐⭐⭐⭐ Good, but slower on complex filters |
+| **Query Speed (avg)** | 73.1 ms | **51.7 ms** |
+| **Ease of Implementation** | Moderate (sparse vectors) | **Easy** (just set `alpha`) |
+| **Cost (1M vectors)** | $103/month | $160/month |
+
+---
+
+### Slide 6: Head‑to‑Head Metrics
+**Key Performance Indicators**
+
+| Metric | Qdrant | Weaviate |
+|--------|--------|----------|
+| **Hybrid Search Quality** | Excellent (learned weights) | Excellent |
+| **Filter Performance** | Best | Good |
+| **Node.js SDK** | Good | Excellent (GraphQL) |
+| **Free Tier** | 1GB forever | 14‑day trial |
+| **Built‑in Vectorization** | No | Yes (modules) |
+| **Production Operations** | Rust (memory‑safe) | Go (K8s‑friendly) |
+
+---
+
+### Slide 7: Decision Framework
+**Weighted Criteria for Our Use Case**
+
+| Criterion | Weight | Qdrant | Weaviate | Rationale |
+|-----------|--------|--------|----------|-----------|
+| **Filtering on layer/framework** | 30% | 5 | 4 | Our three‑layer architecture demands fast filtering. |
+| **Hybrid search quality** | 25% | 4 | 5 | Need both semantic and exact matches. |
+| **Ease of implementation** | 15% | 3 | 5 | Team velocity matters. |
+| **Scalability** | 10% | 5 | 5 | Both scale horizontally. |
+| **Cost** | 10% | 5 | 3 | Qdrant cheaper for 1M vectors. |
+| **SDK quality (Node.js)** | 5% | 4 | 5 | Weaviate’s GraphQL is intuitive. |
+| **Future flexibility** | 5% | 5 | 4 | Qdrant schema‑less. |
+| **TOTAL** | 100% | **4.4** | **4.5** | **Weaviate slightly ahead** |
+
+---
+
+### Slide 8: Recommendation
+**Weaviate – The Slight Edge for Our Team**
+
+✅ **Why Weaviate?**
+- **Simplest hybrid search** – Just set `alpha` (e.g., 0.75) for balanced semantic/keyword results.
+- **GraphQL API** – Natural fit for Node.js/TypeScript developers.
+- **Faster queries** – 51.7 ms vs. 73.1 ms.
+- **Built‑in vectorization** – Reduces pipeline complexity.
+- **Batteries‑included** – Modules for OpenAI, Cohere, etc., if needed later.
+
+📌 **When to choose Qdrant instead**
+- If filtering becomes extremely complex (nested JSON, high‑cardinality) and performance degrades.
+- If you want the 1GB free tier and lower long‑term cost.
+- If you’re comfortable implementing sparse vectors.
+
+---
+
+### Slide 9: Proposed Architecture
+**End‑to‑End Retrieval Pipeline with Weaviate**
+
+```
+[User Story]
+     ↓
+[LLM Query Analyzer]  →  Extract intent, keywords, required layer/framework
+     ↓
+[Retrieval Module]
+ ├─ Generate dense vector (e.g., Voyage Code‑3)
+ └─ Build metadata filters (layer=“data‑layer”, framework=“react”)
+     ↓
+[Weaviate]  ←  Hybrid search (alpha=0.7) + filters
+     ↓
+[Top‑k Code Examples]  (payload: content, file, layer, score)
+     ↓
+[Reranker]  →  Cross‑encoder (e.g., Cohere Rerank) improves precision
+     ↓
+[Code Generator LLM]  +  Examples  →  Final Frontend Code
+```
+
+---
+
+### Slide 10: Next Steps
+**From Evaluation to Production**
+
+1. **Proof of Concept (2 weeks)**  
+   - Set up Weaviate locally/cloud.  
+   - Index 10k code chunks from our internal examples.  
+   - Run hybrid search queries from representative user stories.  
+   - Measure retrieval quality (precision/recall).
+
+2. **Load Testing (1 week)**  
+   - Scale to 100k+ chunks.  
+   - Test complex filters (layer + framework + component type).  
+   - Verify latency stays under 100 ms.
+
+3. **Integration (2 weeks)**  
+   - Build ingestion pipeline (AST‑based chunking + embedding).  
+   - Integrate with existing code generation service.  
+   - Add reranker step.
+
+4. **Go/No‑Go Decision**  
+   - If performance meets targets → production rollout.  
+   - If filtering bottlenecks appear → evaluate Qdrant as fallback.
+
+**Timeline:** ~5 weeks to production‑ready retrieval.
+
+---
+
+## Appendix: Quick Reference Cards
+
+| **Weaviate** | **Qdrant** |
+|--------------|------------|
+| `collection.query.hybrid("query", { alpha: 0.7 })` | `client.search(..., vector=[dense, sparse])` |
+| Filter via `where` clause | Filter via `filter` object |
+| Built‑in modules for embeddings | Bring your own embeddings |
+| GraphQL playground for debugging | REST/gRPC APIs |
+
+*We have all the data to make an informed decision – let’s start the POC!*
